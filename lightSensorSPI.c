@@ -11,19 +11,6 @@
 #include <linux/types.h>
 #include <linux/spi/spidev.h> //Needed for SPI port
 
-#define BUFFER_MAX 3
-#define DIRECTION_MAX 35
-#define VALUE_MAX 256
-
-#define IN 0
-#define OUT 1
-#define LOW 0
-#define HIGH 1
-
-#define PIN 20
-#define POUT 21
-
-
 #define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
 static const char *DEVICE = "/dev/spidev0.0";
@@ -111,12 +98,14 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	do {
-		printf("light : %u\n", readadc(fd, 0));
-		
+	while(1) {
+		printf("light (channel 0) : %u\n", readadc(fd, 0));
+		printf("light (channel 2) : %u\n", readadc(fd, 2));
+		printf("light (channel 4) : %u\n", readadc(fd, 4));
+		printf("light (channel 6) : %u\n", readadc(fd, 6));
 		usleep(1000000);
 	}
-	while (repeat--);
+
 	close(fd);
 	
 	printf("complete\n");
