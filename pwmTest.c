@@ -14,9 +14,9 @@
 #define LOW  0
 #define HIGH 1
 #define POUT 17
+#define PWM 2
 
-#define VALUE_MAX 30
-
+#define VALUE_MAX 256
 #define BUFFER_MAX 3
 #define DIRECTION_MAX 45
 
@@ -127,16 +127,7 @@ void error_handling(char *message){
     exit(1);
 }
 
-#define IN 0
-#define OUT 1
-#define PWM 2
-
-#define LOW 0
-#define HIGH 1
-#define VALUE_MAX 256
-
 static int PWMExport(int pwmnum) {
-#define BUFFER_MAX 3
 	char buffer[BUFFER_MAX];
 	int bytes_written;
 	int fd;
@@ -168,7 +159,6 @@ static int PWMEnable(int pwmnum) {
 	static const char s_unenable_str[] = "0";
 	static const char s_enable_str[] = "1";
 	
-#define DIRECTION_MAX 45
 	char path[DIRECTION_MAX];
 	int fd;
 	
@@ -242,37 +232,29 @@ static int PWMWriteDutyCycle(int pwmnum, int value) {
 }
 
 int main(int argc, char *argv[]) {
-
 	int sock;
 	struct sockaddr_in serv_addr;
 	
-    if(argc!=3){
-        printf("Usage : %s <IP> <port>\n",argv[0]);
-        exit(1);
-    }
-
-    ////Enable GPIO pins
-    //if (-1 == GPIOExport(POUT))
-        //return(1);
-
-    ////Set GPIO directions
-    //if (-1 == GPIODirection(POUT, OUT))
-        //return(2);
-        sock = socket(PF_INET, SOCK_STREAM, 0);
-        if(sock == -1)
-            error_handling("socket() error");
-        
-        memset(&serv_addr, 0, sizeof(serv_addr));
-        serv_addr.sin_family = AF_INET;
-        serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
-        serv_addr.sin_port = htons(atoi(argv[2]));  
-        
-        if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr))==-1)
-            error_handling("connect() error");
-
+	int errchk;
+	char msg1[10];
+	char msg2[10];
 	
+	int case_v, case_h;
+	int v, h;	// v = vertical, h = horizontal
+	v = 500;
+	h = 500;
+	printf("v : %d\n", v);
+	
+	/*//Enable GPIO pins
+    if (-1 == GPIOExport(POUT))
+        return(1);
+
+    //Set GPIO directions
+    if (-1 == GPIODirection(POUT, OUT))
+        return(2);*/
+	printf("9999999999");
 	PWMExport(0);
-	PWMExport(1); 
+	PWMExport(1);
 	
 	PWMWritePeriod(0, 20000000);
 	PWMWritePeriod(1, 20000000); 
@@ -282,97 +264,111 @@ int main(int argc, char *argv[]) {
 	
 	PWMEnable(0);
 	PWMEnable(1);
+	printf("0000000");
+    if(argc!=3){
+        printf("Usage : %s <IP> <port>\n",argv[0]);
+        exit(1);
+    }
+    printf("11111111111");
+    
+	sock = socket(PF_INET, SOCK_STREAM, 0);
+	if(sock == -1)
+		error_handling("socket() error");
+	printf("22222");
+	
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	serv_addr.sin_port = htons(atoi(argv[2]));  
+	printf("3333333333333");
+	if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr))==-1)
+		error_handling("connect() error");
 
-	int errchk;
-	char msg1[10];
-	char msg2[10];
-	 
-	errchk = read(sock, msg1, sizeof(msg1));
-	if(errchk==-1)
-		error_handling("read() error");
-	errchk = read(sock, msg2, sizeof(msg2));
-	if(errchk==-1)
-		error_handling("read() error");
-		
-	int case_v, case_h;
-	case_v = atoi(msg1);
-	case_h = atoi(msg2);
-	
-	int v, h;	// v = vertical, h = horizontal
-	v=500;
-	h=500;
-	// PWM0(=GPIO 18), PWM1(=GPIO 13)
-	switch(case_v&&case_h)
-	{
-		case 0:	// case_v != case_h
-			if(case_v)	// case_v = 1 : case_h = 0 or -1
-			{
-				if(!case_h) // case_h = 0
-				{
-					PWMWriteDutyCycle(0, (++v)*100);
-					// NO HORIZONTAL MOVEMENT
-					break;
-				}
-				else // case_h = -1
-				{
-					PWMWriteDutyCycle(0, (++v)*100);
-					PWMWriteDutyCycle(1, (--h)*100);
-					break;
-				}
-			}
+	printf("555555555555");
+	while (1) {
+		printf("ddd");
+		errchk = read(sock, msg1, sizeof(msg1));
+		if(errchk==-1)
+			error_handling("read() error");
+		errchk = read(sock, msg2, sizeof(msg2));
+		if(errchk==-1)
+			error_handling("read() error");
 			
-			else if(!case_v) // case_v = 0 : case_h = 1 or -1
-			{
-				if(case_h) // case_h = 1
+		case_v = atoi(msg1);
+		case_h = atoi(msg2);
+		
+		// PWM0(=GPIO 18), PWM1(=GPIO 13)
+		switch(case_v&&case_h)
+		{
+			case 0:	// case_v != case_h
+				if(case_v)	// case_v = 1 : case_h = 0 or -1
 				{
-					// NO VERTICAL MOVEMENT
+					if(!case_h) // case_h = 0
+					{
+						PWMWriteDutyCycle(0, (++v)*100);
+						// NO HORIZONTAL MOVEMENT
+						break;
+					}
+					else // case_h = -1
+					{
+						PWMWriteDutyCycle(0, (++v)*100);
+						PWMWriteDutyCycle(1, (--h)*100);
+						break;
+					}
+				}
+				
+				else if(!case_v) // case_v = 0 : case_h = 1 or -1
+				{
+					if(case_h) // case_h = 1
+					{
+						// NO VERTICAL MOVEMENT
+						PWMWriteDutyCycle(1, (++h)*100);
+						break;
+					}
+					else // case_h = -1
+					{
+						// NO VERTICAL MOVEMENT
+						PWMWriteDutyCycle(1, (--h)*100);
+						break;
+					}
+				}
+				else // case_v = -1 : case_h = 0 or 1
+				{
+					if(case_h) // case_h = 1
+					{
+						PWMWriteDutyCycle(0, (--v)*100);
+						PWMWriteDutyCycle(1, (++h)*100);
+						break;
+					}
+					else // case_h = 0
+					{
+						PWMWriteDutyCycle(0, (--v)*100);
+						// NO HORIZONTAL MOVEMENT
+						break;
+					}
+				}
+			
+			case 1: // case_v == case_h
+				if(case_v) // case_v = 1 = case_h
+				{
+					PWMWriteDutyCycle(0, (++v)*100);
 					PWMWriteDutyCycle(1, (++h)*100);
 					break;
 				}
-				else // case_h = -1
+				else if(!case_v) // case_v = 0 = case_h
 				{
-					// NO VERTICAL MOVEMENT
+					// NO VERTICAL & HORIZONTAL MOVEMENT
+					break;
+				}
+				else // case_v = -1 = case_h
+				{
+					PWMWriteDutyCycle(0, (--v)*100);
 					PWMWriteDutyCycle(1, (--h)*100);
 					break;
 				}
-			
-			else // case_v = -1 : case_h = 0 or 1
-			{
-				if(case_h) // case_h = 1
-				{
-					PWMWriteDutyCycle(0, (--v)*100);
-					PWMWriteDutyCycle(1, (++h)*100);
-					break;
-				}
-				else // case_h = 0
-				{
-					PWMWriteDutyCycle(0, (--v)*100);
-					// NO HORIZONTAL MOVEMENT
-					break;
-				}
-			}
 		
-		case 1: // case_v == case_h
-			if(case_v) // case_v = 1 = case_h
-			{
-				PWMWriteDutyCycle(0, (++v)*100);
-				PWMWriteDutyCycle(1, (++h)*100);
-				break;
-			}
-			else if(!case_v) // case_v = 0 = case_h
-			{
-				// NO VERTICAL & HORIZONTAL MOVEMENT
-				break;
-			}
-			else // case_v = -1 = case_h
-			{
-				PWMWriteDutyCycle(0, (--v)*100);
-				PWMWriteDutyCycle(1, (--h)*100);
-				break;
-			}
-	
+		}
 	}
-	
 	close(sock);
 	//if(-1==GPIOUnexport(POUT))
 		//return(4);
