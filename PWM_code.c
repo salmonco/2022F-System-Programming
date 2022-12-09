@@ -299,7 +299,8 @@ int main(int argc, char *argv[]) {
 	case_h = atoi(msg2);
 	
 	int v, h;	// v = vertical, h = horizontal
-	
+	v=0;
+	h=0;
 	// PWM0(=GPIO 18), PWM1(=GPIO 13)
 	switch(case_v&&case_h)
 	{
