@@ -99,8 +99,6 @@ int main(int argc, char *argv[]) {
 	char msg2[10];
 	char msg3[10];
 	char msg4[10];
-	char msg5[10];
-	char msg6[10];
 	int str_len1;
 	int str_len2;
 	int str_len3;
@@ -124,8 +122,8 @@ int main(int argc, char *argv[]) {
 	int axis_h = 0;
 	int axis_v = 0;
 	
-	int v;
-	int h;
+	char v[2];
+	char h[2];
 
 	if(argc!=2){
 		printf("Usage : %s <port>\n",argv[0]);
@@ -230,35 +228,33 @@ int main(int argc, char *argv[]) {
 		
 		axis_h = avg_top - avg_bottom;
 		axis_v = avg_right - avg_left;
-		printf("axis_h : %d\n", axis_h);
 		printf("axis_v : %d\n", axis_v);
-		if (axis_h > 0) {
-			printf("axis_h > 0\n");
-			h = 1;
-		} else if (axis_h < 0) {
-			printf("axis_h < 0\n");
-			h = -1;
-		} else {
-			printf("axis_h = 0\n");
-			h = 0;
-		}
-		
+		printf("axis_h : %d\n", axis_h);
 		if (axis_v > 0) {
 			printf("axis_v > 0\n");
-			v = 1;
+			strcpy(v, "+");
 		} else if (axis_v < 0) {
 			printf("axis_v < 0\n");
-			v = -1;
+			strcpy(v, "-");
 		} else {
 			printf("axis_v = 0\n");
-			v = 0;
+			strcpy(v, "0");
+		}
+		
+		if (axis_h > 0) {
+			printf("axis_h > 0\n");
+			strcpy(h, "+");
+		} else if (axis_h < 0) {
+			printf("axis_h < 0\n");
+			strcpy(h, "-");
+		} else {
+			printf("axis_h = 0\n");
+			strcpy(h, "0");
 		}
 		
 		/* send (v, h) to servo_client */
-		snprintf(msg5,10,"%d",v);
-		snprintf(msg6,10,"%d",h);
-		write(clnt_sock, msg5, sizeof(msg5));
-		write(clnt_sock, msg6, sizeof(msg6));
+		write(clnt_sock, v, sizeof(v));
+		write(clnt_sock, h, sizeof(h));
 		
 		sleep(1);
 	}
