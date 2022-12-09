@@ -144,3 +144,27 @@ int main(void){
     }
 
 }
+
+/* Use code as it is.
+Activate pwm mode by editing config.txt file in /boot/ folder.
+
+>> Settings:
+PWM Hardware control can utilize 4 GPIO PINS: 12, 18, 13, 19
+Therefore, there are 4 options on using PWM Hardware mode
+
+	PWM		GPIO		Function		Alt		dtoverlay
+--------------------------------------------------------------------------------
+	PWM0		 12		   4			Alt0		dtoverlay=pwm,pin=12,func=4
+	PWM0		 18		   2			Alt5		dtoverlay=pwm,pin=18,func=2 
+	PWM1		 13		   4			Alt0		dtoverlay=pwm,pin=13,func=4
+	PWM1		 19		   2			Alt5		dtoverlay=pwm,pin=19,func=2
+
+>> Modifying System:
+- Access "sudo nano /boot/config.txt" and put dtoverlay at the bottom-most line.
+-- Save file with "ctrl+x", then Y, then enter 
+--- Then reboot with "sudo reboot"
+
+++ Activating 2-channels of PWM at the same time:
+- Modify dtoverlay as "dtoverlay=pwm-2chan,pin=(gpio1),func=(func1),pin=(gpio2),func2=(func2)
+-- Again, add line at config.txt file & save & reboot
+*/
