@@ -9,7 +9,7 @@
 #include <unistd.h> /* Needed for SPI port */
 #include <sys/ioctl.h> /* Needed for SPI port */
 #include <linux/spi/spidev.h> /* Needed for SPI port */
-#include <pthread.h>
+#include <pthread.h> /* Needed for Thread */
 
 #define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
@@ -106,7 +106,6 @@ int str_len2;
 int str_len3;
 int str_len4;
 
-//int repeat = 3;
 int top_left = 0;
 int top_middle = 0;
 int top_right = 0;
@@ -187,10 +186,18 @@ void *lightSensor_thd() {
 
 void *read_thd() {
 	while (1) {
-		int str_len1 = read(clnt_sock, msg1, sizeof(msg1));
-		int str_len2 = read(clnt_sock, msg2, sizeof(msg2));
-		int str_len3 = read(clnt_sock, msg3, sizeof(msg3));
-		int str_len4 = read(clnt_sock, msg4, sizeof(msg4));
+		if(clnt_sock<0){           
+			clnt_addr_size = sizeof(clnt_addr);
+			clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+			if(clnt_sock == -1)
+				error_handling("accept() error");   
+		}
+		
+		/* recv lightSensor value from lightSensor_client */
+		str_len1 = read(clnt_sock, msg1, sizeof(msg1));
+		str_len2 = read(clnt_sock, msg2, sizeof(msg2));
+		str_len3 = read(clnt_sock, msg3, sizeof(msg3));
+		str_len4 = read(clnt_sock, msg4, sizeof(msg4));
 		if(str_len1 == -1)
 		    error_handling("read() error");
 		if(str_len2 == -1)
@@ -228,12 +235,19 @@ void *read_thd() {
 
 void *write_thd() {
 	while (1) {
+		if(clnt_sock<0){           
+			clnt_addr_size = sizeof(clnt_addr);
+			clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+			if(clnt_sock == -1)
+				error_handling("accept() error");   
+		}
+		
 		/* send (v, h) to servo_client */
 		write(clnt_sock, v, sizeof(v));
 		write(clnt_sock, h, sizeof(h));
+		
+		sleep(1);
 	}
-	
-	sleep(1);
 }
 
 int main(int argc, char *argv[]) {
@@ -260,13 +274,6 @@ int main(int argc, char *argv[]) {
 	if(listen(serv_sock,5) == -1)
 		error_handling("listen() error");
 
-	if(clnt_sock<0){           
-		clnt_addr_size = sizeof(clnt_addr);
-		clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
-		if(clnt_sock == -1)
-		    error_handling("accept() error");   
-	}
-	
 	fd = open(DEVICE, O_RDWR);
 	if (fd <= 0) {
 		printf("Device %s not found\n", DEVICE);
@@ -283,17 +290,19 @@ int main(int argc, char *argv[]) {
 		perror("thread create error : ");
 		exit(0);
     }
+    
     thr_id = pthread_create(&p_thread[1], NULL, read_thd, NULL);
     if (thr_id < 0) {
 		perror("thread create error : ");
 		exit(0);
     }
-    thr_id = pthread_create(&p_thread[2], 
-    NULL, write_thd, NULL);
+    
+    thr_id = pthread_create(&p_thread[2], NULL, write_thd, NULL);
     if (thr_id < 0) {
 		perror("thread create error : ");
 		exit(0);
     }
+    
     pthread_join(p_thread[0], (void **)&status);
     pthread_join(p_thread[1], (void **)&status);
     pthread_join(p_thread[2], (void **)&status);
