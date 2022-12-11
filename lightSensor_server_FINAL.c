@@ -123,8 +123,8 @@ int avg_right = 0;
 int axis_h = 0;
 int axis_v = 0;
 
-char v[2];
 char h[2];
+char v[2];
 
 /*top_left,    top_middle,    top_right,
 middle_left,                middle_right,
@@ -143,19 +143,8 @@ void computeAverage() {
 	
 	axis_h = avg_top - avg_bottom;
 	axis_v = avg_right - avg_left;
-	printf("axis_v : %d\n", axis_v);
 	printf("axis_h : %d\n", axis_h);
-	if (axis_v > 0) {
-		printf("axis_v > 0\n");
-		strcpy(v, "+");
-	} else if (axis_v < 0) {
-		printf("axis_v < 0\n");
-		strcpy(v, "-");
-	} else {
-		printf("axis_v = 0\n");
-		strcpy(v, "0");
-	}
-	
+	printf("axis_v : %d\n", axis_v);
 	if (axis_h > 0) {
 		printf("axis_h > 0\n");
 		strcpy(h, "+");
@@ -165,6 +154,17 @@ void computeAverage() {
 	} else {
 		printf("axis_h = 0\n");
 		strcpy(h, "0");
+	}
+	
+	if (axis_v > 0) {
+		printf("axis_v > 0\n");
+		strcpy(v, "+");
+	} else if (axis_v < 0) {
+		printf("axis_v < 0\n");
+		strcpy(v, "-");
+	} else {
+		printf("axis_v = 0\n");
+		strcpy(v, "0");
 	}
 }
 
@@ -248,13 +248,13 @@ void *write_thd() {
 				error_handling("accept() error");   
 		}
 		
-		printf("wwwwwwwwwwwwwwwwwwwwwwwwwwwww");
-		printf("v = %s / ", v);
-		printf("h = %s\n", h);
+		printf("----------------------------- ");
+		printf("h = %s / ", h);
+		printf("v = %s\n", v);
 		
 		/* send (v, h) to servo_client */
-		write(clnt_sock, v, sizeof(v));
 		write(clnt_sock, h, sizeof(h));
+		write(clnt_sock, v, sizeof(v));
 		
 		sleep(1);
 	}
