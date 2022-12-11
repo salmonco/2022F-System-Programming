@@ -20,8 +20,8 @@
 #define IN  0
 #define OUT 1
 //#define SERVO 1
-#define SERVO1 18   // vertical
-#define SERVO2 16   // horizontal
+#define SERVO1 18   // x(volt X)
+#define SERVO2 13   // y(volt O)
 #define POUT 17
 
 void error_handling(char *message){
@@ -69,15 +69,15 @@ void *read_thd() {
 	if(str2==-1)
 	    error_handling("read() error");
 	
-	printf("msg1Read: %s\n", msg1);
-	printf("msg2Read: %s\n", msg2);
+	printf("msg1: %s\n", msg1);
+	printf("msg2: %s\n", msg2);
 	
 	sleep(1);
     }
 }
 
 #define START 15
-int gap = 1;
+int gap = 2;
 
 int v = START;
 int h = START;
@@ -86,19 +86,14 @@ int dir=1;
 void *servo_thd() {
     while (1) {
 	
-	printf("msg1Servo: %s\n", msg1);
-	printf("msg2Servo: %s\n", msg2);
-	
 	// Test1
-	if((v<5||v>25)&&(h<5||h>25)) 
-	{ gap*=-1;
+	if((v<5||v>25)&&(h<5||h>25))
+	{ 
+	    v=15;
+	    h=15;
 	    printf("print in reverse way\n");
 	}
 	// Test2
-	// if(v<5){for(;v=15;){v++;})
-	// if(v>25){for(;v=15;){v--;}}
-	// if(h<5){for(;h=15;){h++;}}
-	// if(h>25){for(;h=15;){h--;}}
 
         // if "+" move +2 degree, if "-" move -2 degree, if "0" do not move 
         // degree 2 = 5/45
