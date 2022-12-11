@@ -31,27 +31,27 @@ void error_handling(char *message){
 }
 
 
-void servoPlusControl(int gap)
-{
-    softPwmCreate(SERVO1, 0, 200);
-    digitalWrite(SERVO1, LOW);	// voltage = 0
-    for(int i=0;i<4;i++){
-    softPwmWrite(SERVO1, 15+gap);
-    delay(1000);
-    }
-	return;
-}
+//void servoPlusControl(int gap)
+//{
+    //softPwmCreate(SERVO1, 0, 200);
+    //digitalWrite(SERVO1, LOW);	// voltage = 0
+    //for(int i=0;i<4;i++){
+    //softPwmWrite(SERVO1, 15+gap);
+    //delay(1000);
+    //}
+	//return;
+//}
 
-void servoMinusControl(int gap)
-{
-    softPwmCreate(SERVO1, 0, 200);
-    digitalWrite(SERVO1, LOW);
-    for(int i=0;i<4;i++){
-	softPwmWrite(SERVO1, 15-gap);
-	delay(1000);
-    }
-	return;
-}
+//void servoMinusControl(int gap)
+//{
+    //softPwmCreate(SERVO1, 0, 200);
+    //digitalWrite(SERVO1, LOW);
+    //for(int i=0;i<4;i++){
+	//softPwmWrite(SERVO1, 15-gap);
+	//delay(1000);
+    //}
+	//return;
+//}
 
 int sock;
 struct sockaddr_in serv_addr;
@@ -69,41 +69,51 @@ void *read_thd() {
 	if(str2==-1)
 	    error_handling("read() error");
 	
-	/*printf("msg1: %s\n", msg1);
-	printf("msg2: %s\n", msg2);*/
+	printf("msg1Read: %s\n", msg1);
+	printf("msg2Read: %s\n", msg2);
 	
 	sleep(1);
     }
 }
 
 #define START 15
+int gap = 1;
+
 int v = START;
 int h = START;
+int dir=1;
 
 void *servo_thd() {
     while (1) {
-    // set both servo motor with degree 0
-    softPwmWrite(SERVO1,START);
-	softPwmWrite(SERVO2,START);
-    
-    for(;;){
-	    printf("msg1: %s\n", msg1);
-	    printf("msg2: %s\n", msg2);
+	
+	printf("msg1Servo: %s\n", msg1);
+	printf("msg2Servo: %s\n", msg2);
+	
+	// Test1
+	if((v<5||v>25)&&(h<5||h>25)) 
+	{ gap*=-1;
+	    printf("print in reverse way\n");
+	}
+	// Test2
+	// if(v<5){for(;v=15;){v++;})
+	// if(v>25){for(;v=15;){v--;}}
+	// if(h<5){for(;h=15;){h++;}}
+	// if(h>25){for(;h=15;){h--;}}
 
         // if "+" move +2 degree, if "-" move -2 degree, if "0" do not move 
         // degree 2 = 5/45
         if(!strcmp(msg1,"+")&&!strcmp(msg2,"+")) // (+,+)
         {   
-            v+2;
-            h+2;
-            softPwmCreate(SERVO1, v);
-            softPwmCreate(SERVO2, h);
+            v+=gap;
+            h+=gap;
+            softPwmWrite(SERVO1, v);
+            softPwmWrite(SERVO2, h);
             delay(500);
         }
 	    
         if(!strcmp(msg1,"+")&&!strcmp(msg2,"0")) // (+,0)
         {	    
-            v+2;
+            v+=gap;
             softPwmWrite(SERVO1, v);
 	        //
 	        delay(500);
@@ -111,8 +121,8 @@ void *servo_thd() {
 
         if(!strcmp(msg1,"+")&&!strcmp(msg2,"-")) // (+,-)
         {
-            v+2;
-            h-2;
+            v+=gap;
+            h-=gap;
             softPwmWrite(SERVO1,v);
 	        softPwmWrite(SERVO2,h);
 	        delay(500);
@@ -120,7 +130,7 @@ void *servo_thd() {
 
         if(!strcmp(msg1,"0")&&!strcmp(msg2,"+")) // (0,+)
         {
-            h+2;
+            h+=gap;
             //
             softPwmWrite(SERVO2, h);
             delay(500);
@@ -134,7 +144,7 @@ void *servo_thd() {
 
         if(!strcmp(msg1,"0")&&!strcmp(msg2,"-")) // (0,-)
         {
-            h-2;
+            h-=gap;
             //
             softPwmWrite(SERVO2, h);
             delay(500);
@@ -142,8 +152,8 @@ void *servo_thd() {
         
         if(!strcmp(msg1,"-")&&!strcmp(msg2,"+")) // (-,+)
         {
-            v-2;
-            h+2;
+            v-=gap;
+            h+=gap;
             softPwmWrite(SERVO1,v);
 	        softPwmWrite(SERVO2,h);
 	        delay(500);
@@ -151,7 +161,7 @@ void *servo_thd() {
 
         if(!strcmp(msg1,"-")&&!strcmp(msg2,"0")) // (-,0)
         {
-            v-2;
+            v-=gap;
             softPwmWrite(SERVO1,v);
 	        // 
 	        delay(500);
@@ -159,18 +169,18 @@ void *servo_thd() {
 
         if(!strcmp(msg1,"-")&&!strcmp(msg2,"-")) // (-,-)
         {
-            v-2;
-            h-2;
+            v-=gap;
+            h-=gap;
             softPwmWrite(SERVO1,v);
 	        softPwmWrite(SERVO2,h);
 	        delay(500);
         }
 
         printf("One loop of servo End------------------------\n");
-	}
-	
 	sleep(1);
     }
+    
+    
 }
 
 
@@ -191,7 +201,9 @@ int main(int argc, char *argv[]){
     pinMode(SERVO1,OUTPUT);
     pinMode(SERVO2,OUTPUT);
     softPwmCreate(SERVO1,0,200);
+    softPwmWrite(SERVO1, 15);
     softPwmCreate(SERVO2,0,200);
+    softPwmWrite(SERVO2, 15);
     /* finished */
 
     printf("0000000\n");
