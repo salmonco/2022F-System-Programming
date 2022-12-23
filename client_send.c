@@ -66,9 +66,6 @@ uint8_t control_bits_differential(uint8_t channel) {
 	return (channel & 7) << 4;
 }
 
-/*
- * (SGL/DIF = 1, D2=D1=D0=0)
- */
 uint8_t control_bits(uint8_t channel) {
 	return 0x8 | control_bits_differential(channel);
 }
